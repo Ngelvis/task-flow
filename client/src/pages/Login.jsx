@@ -3,7 +3,10 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLoginMutation } from "../redux/slices/api/authApiSlice";
+import {ToastContainer, toast} from "react-toastify"
+import { setCredentials } from "../redux/slices/authSlice";
 
 const Login = () => {
   const { user } = useSelector((state) => state.auth);
@@ -14,9 +17,23 @@ const Login = () => {
   } = useForm();
 
   const navigate = useNavigate();
+  const dispatch = useDispatch()
+
+  const [login, {isLoading}] = useLoginMutation()
 
   const submitHandler = async (data) => {
-    console.log("submit");
+    try {
+      const result = await login(data).unwrap()
+
+      dispatch(setCredentials(result))
+      nagivate("/");
+
+      console.log(result);
+    } catch (error) {
+      console.log(error)
+      toast.error(error?.data?.message || error.error);
+
+    }
   };
 
   useEffect(() => {
@@ -87,6 +104,12 @@ const Login = () => {
                 Forget Password?
               </span>
 
+              {/* {isLoading ?
+               (
+                <Loading/>
+              ):(
+
+              )} */}
               <Button
                 type='submit'
                 label='Submit'
@@ -96,6 +119,7 @@ const Login = () => {
           </form>
         </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };
